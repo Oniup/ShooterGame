@@ -6,7 +6,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 
 struct onipShader {
     uint32_t tag;
@@ -89,4 +88,92 @@ void onip_window_refresh() {
     glfwGetWindowSize(WINDOW->native, &WINDOW->width, &WINDOW->height);
     glViewport(0, 0, WINDOW->width, WINDOW->height);
     glClear(GL_COLOR_BUFFER_BIT);
+}
+
+
+
+
+onipShader* onip_shader_create(const char* fragment_path, const char* vertex_path) {
+    uint32_t shaders[] = { 0, 0 };
+
+    for (int i = 0; i < 2; i++) {
+        FILE* file = fopen(i == 0 ? fragment_path : vertex_path, "rb");
+        ONIP_ASSERT_FMT(file, "failed to open file [%s]", i == 0 ? fragment_path : vertex_path);
+
+        fseek(file, 0, SEEK_END);
+        size_t length = (size_t)ftell(file);
+        fseek(file, 0, SEEK_SET);
+        char* source = (char*)malloc(sizeof(char*) * length);
+
+        fread(source, sizeof(char), length, file);
+        fclose(file);
+        ONIP_ASSERT_FMT(source, "failed to read file [%s]", i == 0 ? fragment_path : vertex_path);
+
+        shaders[i] = glCreateShader(GL_FRAGMENT_SHADER + i);
+        glShaderSource(shaders[i], 1, (const char* const*)source, NULL);
+        glCompileShader(shaders[i]);
+        free(source);
+
+        int result;
+        glGetShaderiv(shaders[i], GL_COMPILE_STATUS, &result);
+        if (!result) {
+            glGetShaderiv(shaders[i], GL_INFO_LOG_LENGTH, &result);
+            char* message = (char*)malloc(sizeof(char*) * result);
+            glGetShaderInfoLog(shaders[i], result, &result, message);
+            ONIP_ASSERT_FMT(result, "failed to compile shader [%s]", i == 0 ? fragment_path : vertex_path);
+        }
+    }
+
+    onipShader* shader = (onipShader*)malloc(sizeof(onipShader));
+    shader->id = glCreateProgram();
+    shader->tag = (uint32_t)rand();
+    glAttachShader(shader->id, shaders[0]);
+    glAttachShader(shader->id, shaders[1]);
+    glLinkProgram(shader->id);
+
+    int result;
+    glGetProgramiv(shader->id, GL_LINK_STATUS, &result);
+    if (!result) {
+        glGetProgramiv(shader->id, GL_INFO_LOG_LENGTH, &result);
+        char* message = (char*)malloc(sizeof(char*) * result);
+        glGetProgramInfoLog(shader->id, result, &result, message);
+        ONIP_ASSERT_FMT(result, "failed to link shaders to program\n\tfrag:\t[%s]\n\tvert:\t[%s]", fragment_path, vertex_path);
+    }
+
+    return shader;
+}
+
+void onip_shader_free(onipShader* shader) {
+    glDeleteProgram(shader->id);
+    free(shader);
+}
+
+uint32_t onip_shader_id(onipShader* shader) {
+    ONIP_ASSERT(shader, "shader is NULL, cannot get shader id");
+    return shader->id;
+}
+
+
+
+
+onipTexture* onip_texture_create(const char* image_path, bool flip, bool linear_filtering) {
+    return NULL;
+}
+
+void onip_texture_free(onipTexture* texture) {
+}
+
+uint32_t onip_texture_id(onipTexture* texture) {
+    ONIP_ASSERT(texture, "texture is NULL, cannot get texture id");
+    return texture->id;
+}
+
+int onip_texture_width(onipTexture* texture) {
+    ONIP_ASSERT(texture, "texture is NULL, cannot get texture width");
+    return texture->width;
+}
+
+int onip_texture_height(onipTexture* texture) {
+    ONIP_ASSERT(texture, "texture is NULL, cannot get texture height");
+    return texture->height;
 }

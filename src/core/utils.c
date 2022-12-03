@@ -29,11 +29,11 @@ const char* onip_str_char(onipString* str) {
     return (const char*)str->str;
 }
 
-onipString* onip_str_set(onipString* str, const char* newStr) {
+onipString* onip_str_set(onipString* str, const char* new_str) {
     free(str->str);
-    size_t length = strlen(newStr);
+    size_t length = strlen(new_str);
     str->str = (char*)malloc(sizeof(char*) * length);
-    strncpy(str->str, newStr, length);
+    strncpy(str->str, new_str, length);
     str->str[length] = '\0';
     return str;
 }
@@ -45,13 +45,13 @@ onipString* onip_str_copy(const onipString* str) {
 onipString* onip_str_append(onipString* str, const char* append) {
     if (str != NULL) {
         if (str->str != NULL) {
-            size_t currentLength = strlen(str->str);
-            size_t appendLength = strlen(append);
-            str->str = (char*)realloc(str->str, sizeof(char*) * (currentLength + appendLength));
+            size_t current_length = strlen(str->str);
+            size_t append_length = strlen(append);
+            str->str = (char*)realloc(str->str, sizeof(char*) * (current_length + append_length));
             assert(str->str && "Failed to append string");
 
-            memcpy(str->str + currentLength, append, currentLength + appendLength);
-            str->str[currentLength + appendLength] = '\0';
+            memcpy(str->str + current_length, append, current_length + append_length);
+            str->str[current_length + append_length] = '\0';
         }
         else {
             str = onip_str_set(str, append);
@@ -64,5 +64,5 @@ onipString* onip_str_append(onipString* str, const char* append) {
 }
 
 size_t onip_str_len(const onipString* str) {
-    return strlen(str);
+    return strlen(str->str);
 }
