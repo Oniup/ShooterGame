@@ -1,12 +1,26 @@
-#ifndef __SHOOTER_GRAPHICS_TYPES_H__
-#define __SHOOTER_GRAPHICS_TYPES_H__
+#ifndef __ONIP_GRAPHICS_TYPES_H__
+#define __ONIP_GRAPHICS_TYPES_H__
 
-typedef struct Shader Shader;
-typedef struct Texture Texture;
-typedef struct Vertex Vertex;
+#include <stdint.h>
+#include <cglm/cglm.h>
+#include <stdbool.h>
 
-typedef struct Window Window;
+typedef struct onipShader onipShader;
+typedef struct onipTexture onipTexture;
+typedef struct onipWindow onipWindow;
 
-Window* sh_window_create(int width, int height, const char* title);
+typedef struct onipVertex {
+    vec3 position;
+    vec2 uv;
+    vec3 normal;
+    float textureID;
+} onipVertex;
 
-#endif // __SHOOTER_GRAPHICS_TYPES_H__
+onipWindow* onip_window_create(int width, int height, const char* title, bool fullscreen);
+void onip_window_free();
+
+onipWindow* onip_window_get();
+bool onip_window_closing();
+void onip_window_refresh();
+
+#endif // __ONIP_GRAPHICS_TYPES_H__
